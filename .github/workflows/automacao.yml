@@ -1,0 +1,40 @@
+name: Executar Agente Henry News
+
+# Define quando o robô vai rodar
+on:
+  schedule:
+    # Configuração Cron: Roda de hora em hora (0 minutos de cada hora)
+    - cron: '0 * * * *'
+  # Permite que você ative o robô manualmente pelo site do GitHub se quiser testar
+  workflow_dispatch:
+
+jobs:
+  rodar-agente:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Copia os arquivos do seu repositório para a máquina virtual
+    - name: Clonar Repositório
+      uses: actions/checkout@v4
+
+    # 2. Instala o Python na máquina virtual
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    # 3. Instala as bibliotecas que colocamos no requirements.txt
+    - name: Instalar Dependências
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # 4. Executa o script passando as chaves secretas do cofre para o código
+    - name: Executar Script do Agente
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
+        X_CONSUMER_SECRET: ${{ secrets.X_CONSUMER_SECRET }}
+        X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+        X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+      run: python agent_news.py
