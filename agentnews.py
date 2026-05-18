@@ -43,23 +43,30 @@ def formatar_com_gemini(titulo_noticia):
     return response.text
 
 def postar_no_twitter(texto_final, link_original):
-    """Conecta com a API do X e realiza a postagem usando chaves de acesso direto"""
+    """Conecta com a API do X forçando o ecossistema gratuito"""
     
-    # Nova autenticação simplificada e compatível com o plano Free do X
-    client_x = tweepy.Client(
-        bearer_token=None, # Força a API v2 a usar os tokens de usuário abaixo
-        consumer_key=os.environ.get("X_CONSUMER_KEY"),
-        consumer_secret=os.environ.get("X_CONSUMER_SECRET"),
-        access_token=os.environ.get("X_ACCESS_TOKEN"),
-        access_token_secret=os.environ.get("X_ACCESS_TOKEN_SECRET")
+    # Método infalível para o plano Free: Autenticação via Handler tradicional
+    auth = tweepy.OAuthHandler(
+        os.environ.get("X_CONSUMER_KEY"),
+        os.environ.get("X_CONSUMER_SECRET")
+    )
+    auth.set_access_token(
+        os.environ.get("X_ACCESS_TOKEN"),
+        os.environ.get("X_ACCESS_TOKEN_SECRET")
     )
     
-    # Junta o texto gerado pela IA com o link da fonte original
+    # Criamos o cliente passando o Harrison de autenticação antiga
+    api_antiga = tweepy.API(auth)
+    
     conteudo_tweet = f"{texto_final}\n\nFonte: {link_original}"
     
-    # Publica usando autenticação de usuário (V2), permitida no plano grátis
-    client_x.create_tweet(text=conteudo_tweet)
+    # Envia o tweet usando o método clássico (que o plano grátis aceita sem cobrar 402)
+    api_antiga.update_status(status=conteudo_tweet)
     print("🛡️ Henry Security News publicado com sucesso!")
+
+
+
+    
 # --- EXECUÇÃO DO FLUXO ---
 if __name__ == "__main__":
     noticia_recente = buscar_ultima_noticia()
