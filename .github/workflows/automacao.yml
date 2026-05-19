@@ -1,12 +1,11 @@
-name: Executar Agente Henry News
-
-# Define quando o robô vai rodar
+name: Henry Security Agent - Automation
 on:
-  schedule:
-    # Configuração Cron: Roda de hora em hora (0 minutos de cada hora)
-    - cron: '0 * * * *'
-  # Permite que você ative o robô manualmente pelo site do GitHub se quiser testar
+  # Permite que você ainda rode manualmente pelo botão sempre que quiser
   workflow_dispatch:
+  
+  # Agenda a execução para rodar 4 vezes ao dia (A cada 6 horas: 00:00, 06:00, 12:00, 18:00 UTC)
+  schedule:
+    - cron: '0 */6 * * *'
 
 jobs:
   rodar-agente:

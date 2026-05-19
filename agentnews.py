@@ -7,6 +7,7 @@ from google import genai
 FEEDS = [
     "https://thehackernews.com/feeds/posts/default",
     "https://www.bleepingcomputer.com/feed/"
+    "https://www.cybersecbrazil.com.br/blog"
 ]
 
 def buscar_ultima_noticia():
