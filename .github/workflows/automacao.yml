@@ -29,12 +29,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # 4. Executa o script passando as chaves secretas do cofre para o código
+    # 4. Executa o script passando as chaves certas do Telegram
     - name: Executar Script do Agente
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
-        X_CONSUMER_SECRET: ${{ secrets.X_CONSUMER_SECRET }}
-        X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-        X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        TELEGRAM_BOT_KEY: ${{ secrets.TELEGRAM_BOT_KEY }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: python agentnews.py
+     

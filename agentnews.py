@@ -1,10 +1,9 @@
 import feedparser
-import tweepy
 import os
+import requests
 from google import genai
 
 # --- CONFIGURAÇÃO DOS FEEDS DE CIBERSEGURANÇA ---
-# Buscaremos do The Hacker News e BleepingComputer
 FEEDS = [
     "https://thehackernews.com/feeds/posts/default",
     "https://www.bleepingcomputer.com/feed/"
@@ -21,52 +20,60 @@ def buscar_ultima_noticia():
 
 def formatar_com_gemini(titulo_noticia):
     """O cérebro da Henry Security processa a notícia"""
-    # Buscando a chave da IA de forma segura do sistema
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
     
-    # Prompt blindado para evitar vazamento de dados sensíveis e manter o tom sênior
+    # Prompt focado no formato de relatório/alerta do Telegram
     prompt = (
-        f"Você é o Diretor de Inteligência da Henry Security. "
-        f"Transforme a seguinte manchete em um tweet de alerta profissional para o Twitter/X. "
-        f"Regras estritas: Use um tom sério, técnico e focado em mitigação/defesa. "
-        f"NUNCA exponha credenciais, links de bancos de dados vazados ou informações sensíveis de vítimas. "
-        f"Mantenha o texto curto (máximo 220 caracteres) para caber no limite do Twitter. "
-        f"Adicione 2 hashtags relevantes como #BlueTeam ou #CyberSecurity.\n\n"
-        f"Manchete: {titulo_noticia}"
+        f"Você é o Diretor de Inteligência da Henry Security.\n"
+        f"Transforme a seguinte manchete em um alerta de segurança profissional para um canal corporativo do Telegram.\n"
+        f"Regras:\n"
+        f"- Use um tom sério, técnico e focado em Blue Team (Defesa).\n"
+        f"- Use formatação Markdown (como **negrito** para destacar pontos críticos).\n"
+        f"- Inclua emojis de alerta de forma moderada (ex: 🚨, ⚠️, 🛡️).\n"
+        f"- Adicione um parágrafo curtíssimo sobre o impacto ou mitigação geral.\n\n"
+        f"Manchete original: {titulo_noticia}"
     )
     
     response = client.models.generate_content(
-        model="gemini-2.5-flash", 
+        model="gemini-1.5-flash", 
         contents=prompt
     )
     return response.text
 
-def postar_no_twitter(texto_final, link_original):
-    """Conecta com a API v2 garantindo o mapeamento completo de chaves para o plano Free"""
+def postar_no_telegram(texto_final, link_original):
+    """Envia o alerta formatado direto para o canal do Telegram de forma 100% gratuita"""
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     
-    # Passamos as 4 chaves juntas para não dar divergência de escopo
-    client_x = tweepy.Client(
-        consumer_key=os.environ.get("X_CONSUMER_KEY"),
-        consumer_secret=os.environ.get("X_CONSUMER_SECRET"),
-        access_token=os.environ.get("X_ACCESS_TOKEN"),
-        access_token_secret=os.environ.get("X_ACCESS_TOKEN_SECRET")
-    )
+    # Montamos o corpo da mensagem com formatação rica
+    mensagem_completa = f"{texto_final}\n\n🔗 **Fonte original:** {link_original}"
     
-    conteudo_tweet = f"{texto_final}\n\nFonte: {link_original}"
+    # URL oficial da API do Telegram
+    url_api = f"https://api.telegram.org/bot{token}/sendMessage"
     
-    # O método v2 puro, usando autenticação explícita de usuário
-    client_x.create_tweet(text=conteudo_tweet, user_auth=False)
-    print("🛡️ Henry Security News publicado com sucesso!")
+    payload = {
+        "chat_id": chat_id,
+        "text": mensagem_completa,
+        "parse_mode": "Markdown"  # Permite que o Telegram renderize negritos e links amigáveis
+    }
+    
+    response = requests.post(url_api, json=payload)
+    
+    if response.status_code == 200:
+        print("🛡️ Alerta Henry Security publicado com sucesso no Telegram!")
+    else:
+        print(f"Erro ao postar no Telegram: {response.status_code} - {response.text}")
+
 # --- EXECUÇÃO DO FLUXO ---
 if __name__ == "__main__":
     noticia_recente = buscar_ultima_noticia()
     
     if noticia_recente:
         print(f"Processando: {noticia_recente['titulo']}")
-        tweet_sofisticado = formatar_com_gemini(noticia_recente['titulo'])
+        alerta_sofisticado = formatar_com_gemini(noticia_recente['titulo'])
         
-        # Executa a postagem
-        postar_no_twitter(tweet_sofisticado, noticia_recente['link'])
+        # Dispara o envio
+        postar_no_telegram(alerta_sofisticado, noticia_recente['link'])
     else:
-        print("Nenhuma notícia encontrada nos servidores parceiros.")
+        print("Nenhuma notícia nova encontrada nos feeds de inteligência.")
