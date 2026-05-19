@@ -36,14 +36,14 @@ def formatar_com_gemini(titulo_noticia):
     )
     
     response = client.models.generate_content(
-        model="gemini-1.5-flash", 
+        model="gemini-2.5-flash", 
         contents=prompt
     )
     return response.text
 
 def postar_no_telegram(texto_final, link_original):
     """Envia o alerta formatado direto para o canal do Telegram de forma 100% gratuita"""
-    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    token = os.environ.get("TELEGRAM_BOT_KEY")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     
     # Montamos o corpo da mensagem com formatação rica
