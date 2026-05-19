@@ -19,17 +19,18 @@ def buscar_ultima_noticia():
     return None
 
 def formatar_com_gemini(titulo_noticia):
-    """O cérebro da Henry Security processa a notícia"""
+    """O cérebro da Henry Security processa a notícia usando tags HTML seguras"""
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
     
-    # Prompt focado no formato de relatório/alerta do Telegram
+    # Mudamos as instruções para exigir HTML em vez de Markdown
     prompt = (
         f"Você é o Diretor de Inteligência da Henry Security.\n"
         f"Transforme a seguinte manchete em um alerta de segurança profissional para um canal corporativo do Telegram.\n"
-        f"Regras:\n"
+        f"Regras estritas de formatação:\n"
         f"- Use um tom sério, técnico e focado em Blue Team (Defesa).\n"
-        f"- Use formatação Markdown (como **negrito** para destacar pontos críticos).\n"
+        f"- Use APENAS as seguintes tags HTML para formatar: <b>para negrito</b> e <i>para itálico</i>.\n"
+        f"- NUNCA use colchetes, asteriscos (*) ou underlines (_) para formatar texto.\n"
         f"- Inclua emojis de alerta de forma moderada (ex: 🚨, ⚠️, 🛡️).\n"
         f"- Adicione um parágrafo curtíssimo sobre o impacto ou mitigação geral.\n\n"
         f"Manchete original: {titulo_noticia}"
@@ -42,20 +43,19 @@ def formatar_com_gemini(titulo_noticia):
     return response.text
 
 def postar_no_telegram(texto_final, link_original):
-    """Envia o alerta formatado direto para o canal do Telegram de forma 100% gratuita"""
+    """Envia o alerta formatado em HTML direto para o canal do Telegram"""
     token = os.environ.get("TELEGRAM_BOT_KEY")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     
-    # Montamos o corpo da mensagem com formatação rica
-    mensagem_completa = f"{texto_final}\n\n🔗 **Fonte original:** {link_original}"
+    # Montamos o corpo da mensagem com link formatado em HTML nativo
+    mensagem_completa = f"{texto_final}\n\n🔗 <b>Fonte original:</b> <a href='{link_original}'>Clique aqui para ler a notícia completa</a>"
     
-    # URL oficial da API do Telegram
     url_api = f"https://api.telegram.org/bot{token}/sendMessage"
     
     payload = {
         "chat_id": chat_id,
         "text": mensagem_completa,
-        "parse_mode": "Markdown"  # Permite que o Telegram renderize negritos e links amigáveis
+        "parse_mode": "HTML"  # Mudamos de Markdown para HTML para blindar contra erros de sintaxe
     }
     
     response = requests.post(url_api, json=payload)
