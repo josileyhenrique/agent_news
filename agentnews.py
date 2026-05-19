@@ -56,7 +56,7 @@ def postar_no_twitter(texto_final, link_original):
     conteudo_tweet = f"{texto_final}\n\nFonte: {link_original}"
     
     # O método v2 puro, usando autenticação explícita de usuário
-    client_x.create_tweet(text=conteudo_tweet, user_auth=True)
+    client_x.create_tweet(text=conteudo_tweet, user_auth=False)
     print("🛡️ Henry Security News publicado com sucesso!")
 # --- EXECUÇÃO DO FLUXO ---
 if __name__ == "__main__":
