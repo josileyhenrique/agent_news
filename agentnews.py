@@ -85,7 +85,7 @@ def postar_no_telegram(texto_final, link_original):
 
 # --- EXECUÇÃO DO FLUXO ---
 if __name__ == "__main__":
-    noticia_recente = buscar_ultima_noticia()
+    noticia_recente = buscar_noticia_inédita()
     
     if noticia_recente:
         print(f"Processando: {noticia_recente['titulo']}")
