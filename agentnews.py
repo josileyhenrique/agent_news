@@ -10,13 +10,30 @@ FEEDS = [
     "https://www.cybersecbrazil.com.br/blog"
 ]
 
-def buscar_ultima_noticia():
-    """Varre os portais e traz a manchete mais recente"""
+ARQUIVO_HISTORICO = "ultimo_link.txt"
+
+def buscar_noticia_inédita():
+    """Varre os portais e traz a primeira notícia que ainda não foi postada"""
+    # Lemos qual foi o último link postado (se o arquivo existir)
+    ultimo_link_gravado = ""
+    if os.path.exists(ARQUIVO_HISTORICO):
+        with open(ARQUIVO_HISTORICO, "r") as f:
+            ultimo_link_gravado = f.read().strip()
+
     for url in FEEDS:
         feed = feedparser.parse(url)
-        if feed.entries:
-            noticia = feed.entries[0]
+        for noticia in feed.entries:
+            # Se o link for igual ao último gravado, nós ignoramos e passamos para a próxima
+            if noticia.link == ultimo_link_gravado:
+                continue
+            
+            # Se chegou aqui, encontramos uma notícia inédita!
+            # Gravamos o link dela para a próxima execução do robô
+            with open(ARQUIVO_HISTORICO, "w") as f:
+                f.write(noticia.link)
+                
             return {"titulo": noticia.title, "link": noticia.link}
+            
     return None
 
 def formatar_com_gemini(titulo_noticia):

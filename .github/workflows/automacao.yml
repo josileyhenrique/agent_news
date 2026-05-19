@@ -35,4 +35,12 @@ jobs:
         TELEGRAM_BOT_KEY: ${{ secrets.TELEGRAM_BOT_KEY }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: python agentnews.py
+    # 5. Salva o histórico de links no repositório para evitar repetições
+    - name: Salvar histórico de postagens
+      run: |
+        git config --global user.name "Henry Security Bot"
+        git config --global user.email "bot@henrysecurity.com"
+        git add ultimo_link.txt
+        git commit -m "Chore: Atualizado histórico de links enviados [skip ci]" || exit 0
+        git push
      
