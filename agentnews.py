@@ -43,9 +43,9 @@ def formatar_com_gemini(titulo_noticia):
     return response.text
 
 def postar_no_twitter(texto_final, link_original):
-    """Conecta com a API v2 do X usando a autenticação de usuário do plano Free"""
+    """Conecta com a API v2 garantindo o mapeamento completo de chaves para o plano Free"""
     
-    # Configuração correta para a API v2 gratuita
+    # Passamos as 4 chaves juntas para não dar divergência de escopo
     client_x = tweepy.Client(
         consumer_key=os.environ.get("X_CONSUMER_KEY"),
         consumer_secret=os.environ.get("X_CONSUMER_SECRET"),
@@ -55,11 +55,9 @@ def postar_no_twitter(texto_final, link_original):
     
     conteudo_tweet = f"{texto_final}\n\nFonte: {link_original}"
     
-    # O PULO DO GATO: user_auth=True força o Tweepy a usar as chaves de usuário na API v2
+    # O método v2 puro, usando autenticação explícita de usuário
     client_x.create_tweet(text=conteudo_tweet, user_auth=True)
     print("🛡️ Henry Security News publicado com sucesso!")
-
-
 # --- EXECUÇÃO DO FLUXO ---
 if __name__ == "__main__":
     noticia_recente = buscar_ultima_noticia()
